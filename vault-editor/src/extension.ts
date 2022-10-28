@@ -1,8 +1,10 @@
 import { ExtensionContext, window, workspace, commands } from "vscode";
 import { decrypt } from "./commands/decrypt";
+import { diff } from "./commands/diff";
 import { edit } from "./commands/edit";
 import { encrypt } from "./commands/encrypt";
 import { decryptAndOutput, isEncryptedDocument } from "./util";
+import { existsSync } from "fs";
 
 export function activate(context: ExtensionContext) {
   const output = window.createOutputChannel("Vault - Decrypted Output");
@@ -16,7 +18,7 @@ export function activate(context: ExtensionContext) {
 
   context.subscriptions.push(
     workspace.onDidOpenTextDocument(async (doc) => {
-      if (isEncryptedDocument(doc)) {
+      if (isEncryptedDocument(doc) && existsSync(doc.fileName)) {
         await decryptAndOutput(doc, output);
       }
     })
@@ -37,7 +39,17 @@ export function activate(context: ExtensionContext) {
     edit
   );
 
-  context.subscriptions.push(encryptCommand, decryptCommand, editCommand);
+  const diffCommand = commands.registerCommand(
+    "encrypted-file-editor.diff_file",
+    diff
+  );
+
+  context.subscriptions.push(
+    encryptCommand,
+    decryptCommand,
+    editCommand,
+    diffCommand
+  );
 }
 
 export function deactivate() {}

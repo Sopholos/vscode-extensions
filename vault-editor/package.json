@@ -26,9 +26,16 @@
       {
         "command": "encrypted-file-editor.decrypt_file",
         "title": "Vault: Decrypt File"
+      },
+      {
+        "command": "encrypted-file-editor.diff_file",
+        "title": "Vault: Diff File"
       }
     ]
   },
+  "extensionDependencies": [
+    "vscode.git"
+  ],
   "scripts": {
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
