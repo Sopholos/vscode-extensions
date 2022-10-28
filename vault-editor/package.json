@@ -17,15 +17,15 @@
     "commands": [
       {
         "command": "encrypted-file-editor.edit_file",
-        "title": "Edit File"
+        "title": "Vault: Edit File"
       },
       {
         "command": "encrypted-file-editor.encrypt_file",
-        "title": "Encrypt File"
+        "title": "Vault: Encrypt File"
       },
       {
         "command": "encrypted-file-editor.decrypt_file",
-        "title": "Decrypt File"
+        "title": "Vault: Decrypt File"
       }
     ]
   },
