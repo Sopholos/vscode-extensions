@@ -1,0 +1,10 @@
+{
+  "name": "vscode-extensions",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "generator-code": "^1.7.0",
+    "yo": "^4.3.0"
+  }
+}
