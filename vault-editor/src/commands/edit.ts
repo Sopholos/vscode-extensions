@@ -1,19 +1,25 @@
 import { window, workspace } from "vscode";
-import { getVault, replaceText, showError } from "../util";
+import { configurationName } from "../extension";
+import { getVault, isEncryptedDocument, replaceText, showError } from "../util";
 
 export const edit = async () => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
-    return window.showInformationMessage("No file to edit");
+    return window.showErrorMessage("No active text editor to edit");
   }
 
-  const conf = workspace.getConfiguration("vault-editor");
+  if (!isEncryptedDocument(activeEditor.document)) {
+    return window.showErrorMessage("Text doesn't seem to be encrypted");
+  }
+
+  const conf = workspace.getConfiguration(configurationName);
+  const keysRoot = conf.get<string>("keysRoot") ?? "";
 
   const editorFileName = activeEditor.document.fileName;
 
   try {
-    const vault = getVault(conf.keysDir, editorFileName);
+    const vault = getVault(keysRoot, editorFileName);
 
     const decryptedContent = await vault.decrypt(
       activeEditor.document.getText(),
@@ -22,9 +28,7 @@ export const edit = async () => {
 
     await replaceText(activeEditor, decryptedContent ?? "");
 
-    window.showInformationMessage(
-      "Successfully decrypted file - save to encrypt it again"
-    );
+    window.showInformationMessage("Save to encrypt file again");
 
     const saveListener = workspace.onDidSaveTextDocument(
       async (savedDocument) => {
@@ -38,7 +42,6 @@ export const edit = async () => {
           await replaceText(activeEditor, encryptedContent);
           saveListener.dispose();
           await activeEditor.document.save();
-          window.showInformationMessage("Successfully encrypted file");
         }
       }
     );

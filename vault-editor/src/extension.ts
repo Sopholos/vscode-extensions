@@ -6,23 +6,31 @@ import { encrypt } from "./commands/encrypt";
 import { decryptAndOutput, isEncryptedDocument } from "./util";
 import { existsSync } from "fs";
 
+export const configurationName = "vaultEditor";
+
 export function activate(context: ExtensionContext) {
-  const output = window.createOutputChannel("Vault - Decrypted Output");
+  const output = window.createOutputChannel("Vault Editor");
+  const conf = workspace.getConfiguration(configurationName);
+  const decryptOnOpen = conf.get<boolean>("decryptOnOpen");
+  const decryptOnStartup = conf.get<boolean>("decryptOnStartup");
 
-  // Decrypt opened files on startup
-  workspace.textDocuments.forEach(async (doc) => {
-    if (isEncryptedDocument(doc)) {
-      await decryptAndOutput(doc, output);
-    }
-  });
-
-  context.subscriptions.push(
-    workspace.onDidOpenTextDocument(async (doc) => {
-      if (isEncryptedDocument(doc) && existsSync(doc.fileName)) {
+  if (decryptOnStartup) {
+    workspace.textDocuments.forEach(async (doc) => {
+      if (isEncryptedDocument(doc)) {
         await decryptAndOutput(doc, output);
       }
-    })
-  );
+    });
+  }
+
+  if (decryptOnOpen) {
+    context.subscriptions.push(
+      workspace.onDidOpenTextDocument(async (doc) => {
+        if (isEncryptedDocument(doc) && existsSync(doc.fileName)) {
+          await decryptAndOutput(doc, output);
+        }
+      })
+    );
+  }
 
   const encryptCommand = commands.registerCommand(
     "encrypted-file-editor.encrypt_file",

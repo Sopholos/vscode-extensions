@@ -10,9 +10,13 @@ import { readFileSync } from "fs";
 import { parse, dirname, join } from "path";
 import { glob } from "glob";
 import { Vault } from "ansible-vault";
+import { configurationName } from "./extension";
+
+export const isEncryptedText = (text: string) =>
+  text.startsWith("$ANSIBLE_VAULT;");
 
 export const isEncryptedDocument = (doc: TextDocument) =>
-  doc.lineAt(0).text.startsWith("$ANSIBLE_VAULT;");
+  isEncryptedText(doc.lineAt(0).text);
 
 export const replaceText = async (editor: TextEditor, content: string) =>
   editor.edit((builder) => {
@@ -36,9 +40,11 @@ export const decryptAndOutput = async (
   output: OutputChannel
 ) => {
   try {
-    const conf = workspace.getConfiguration("vault-editor");
+    const conf = workspace.getConfiguration(configurationName);
+    const keysRoot = conf.get<string>("keysRoot") ?? "";
+
     const editorFileName = document.fileName;
-    const vault = getVault(conf.keysDir, editorFileName);
+    const vault = getVault(keysRoot, editorFileName);
 
     const encryptedFileContent = readFileSync(editorFileName, "utf-8");
     const decrypted = await vault.decrypt(encryptedFileContent, undefined);
@@ -46,20 +52,18 @@ export const decryptAndOutput = async (
     output.append(`----- DECRYPTED ${editorFileName} -----\n`);
     output.append(`${decrypted ?? ""}\n`);
     output.show();
-
-    window.showInformationMessage("Successfully decrypted file");
   } catch (err: any) {
     return showError(err);
   }
 };
 
-export const getVault = (keysDir: string, encryptedFilePath: string) => {
+export const getVault = (keysRoot: string, encryptedFilePath: string) => {
   const encryptedFileName = parse(encryptedFilePath).name;
 
   const encryptedFileDirName = dirname(encryptedFilePath).split("/").pop();
 
   const getVaultKeyInRoot = () => {
-    const vaultKeys = glob.sync("*.key", { cwd: keysDir });
+    const vaultKeys = glob.sync("*.key", { cwd: keysRoot });
 
     const pathOfKeyUsedToEncryptFile = vaultKeys.find((vaultKeyFilePath) =>
       encryptedFileName.includes(parse(vaultKeyFilePath).name)
@@ -75,14 +79,14 @@ export const getVault = (keysDir: string, encryptedFilePath: string) => {
 
     return new Vault({
       password: readFileSync(
-        join(keysDir, pathOfKeyUsedToEncryptFile),
+        join(keysRoot, pathOfKeyUsedToEncryptFile),
         "utf-8"
       ).replace("\n", ""),
     });
   };
 
   if (encryptedFileDirName) {
-    const vaultKeys = glob.sync("**/*.key", { cwd: keysDir });
+    const vaultKeys = glob.sync("**/*.key", { cwd: keysRoot });
 
     const pathOfVaultKeyFilesWithMatchingDir = vaultKeys.filter(
       (vaultKeyPath) =>
@@ -100,13 +104,13 @@ export const getVault = (keysDir: string, encryptedFilePath: string) => {
 
     if (!pathOfKeyUsedToEncryptFile) {
       throw new Error(
-        `No vault key file matches ${encryptedFileName} in directory ${keysDir}`
+        `No vault key file matches ${encryptedFileName} in directory ${keysRoot}`
       );
     }
 
     return new Vault({
       password: readFileSync(
-        join(keysDir, pathOfKeyUsedToEncryptFile),
+        join(keysRoot, pathOfKeyUsedToEncryptFile),
         "utf-8"
       ).replace("\n", ""),
     });

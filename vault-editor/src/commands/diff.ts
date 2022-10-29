@@ -1,15 +1,25 @@
 import { extensions, workspace, window, commands, Uri } from "vscode";
 import { GitExtension } from "../git";
-import { getVault, showError } from "../util";
+import {
+  getVault,
+  isEncryptedDocument,
+  isEncryptedText,
+  showError,
+} from "../util";
 import { mkdirSync, writeFileSync, existsSync } from "fs";
 import { rm } from "fs/promises";
 import { basename } from "path";
+import { configurationName } from "../extension";
 
 export const diff = async () => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
-    return window.showInformationMessage("No file to diff");
+    return window.showInformationMessage("No active text editor to diff");
+  }
+
+  if (!isEncryptedDocument(activeEditor.document)) {
+    return window.showErrorMessage("Text doesn't seem to be encrypted");
   }
 
   const editorFilePath = activeEditor.document.fileName;
@@ -31,19 +41,33 @@ export const diff = async () => {
     throw new Error(`Couldn't find git repo for file ${editorFilePath}`);
   }
 
-  const conf = workspace.getConfiguration("vault-editor");
+  const conf = workspace.getConfiguration(configurationName);
+  const keysRoot = conf.get<string>("keysRoot") ?? "";
 
   try {
-    const vault = getVault(conf.keysDir, editorFilePath);
+    const vault = getVault(keysRoot, editorFilePath);
 
-    const pickedBranch = await window.showQuickPick(
-      repo.state.refs.map((ref) => ref.name ?? ""),
-      { title: "Select branch to compare with" }
-    );
+    let pickedBranch = conf.get<string>("diff.branch");
 
     if (!pickedBranch) {
-      return window.showInformationMessage(
-        "Cannot diff without selecting a branch"
+      pickedBranch = await window.showQuickPick(
+        repo.state.refs.map((ref) => ref.name ?? ""),
+        { title: "Select branch to compare with" }
+      );
+
+      if (!pickedBranch) {
+        return window.showInformationMessage(
+          "Cannot diff without selecting a branch"
+        );
+      }
+    }
+
+    const originalVault = await repo.show(pickedBranch, editorFilePath);
+    const vaultFileBaseName = basename(editorFilePath);
+
+    if (!isEncryptedText(originalVault)) {
+      return window.showErrorMessage(
+        `${vaultFileBaseName} on branch ${pickedBranch} doesn't seem to be encrypted`
       );
     }
 
@@ -53,18 +77,15 @@ export const diff = async () => {
       mkdirSync(tmpDir);
     }
 
-    const vaultFileBaseName = basename(editorFilePath);
-
-    const originalVault = await repo.show(pickedBranch, editorFilePath);
     const decryptedOriginal = await vault.decrypt(originalVault, "");
-    const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_original`;
+    const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_${pickedBranch}`;
     writeFileSync(tmpOriginalPath, decryptedOriginal ?? "");
 
     const decryptedModified = await vault.decrypt(
       activeEditor.document.getText(),
       ""
     );
-    const tmpModifiedPath = `${tmpDir}/${vaultFileBaseName}_modified`;
+    const tmpModifiedPath = `${tmpDir}/${vaultFileBaseName}_${repo.state.HEAD?.name}`;
     writeFileSync(tmpModifiedPath, decryptedModified ?? "");
 
     await commands.executeCommand(
