@@ -2,10 +2,15 @@
   "name": "vault-editor",
   "displayName": "Vault Editor",
   "description": "Encrypt, decrypt and diff files with Ansible Vault.",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.72.0"
   },
+  "repository": {
+    "url": "https://gitlab.com/bageren/vscode-extensions.git"
+  },
+  "license": "MIT",
+  "publisher": "bageren",
   "categories": [
     "Other"
   ],
@@ -68,6 +73,7 @@
     "vscode.git"
   ],
   "scripts": {
+    "publish": "vsce publish",
     "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -86,7 +92,8 @@
     "eslint": "^8.24.0",
     "glob": "^8.0.3",
     "mocha": "^10.0.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "vsce": "^2.14.0"
   },
   "dependencies": {
     "ansible-vault": "^1.1.0"
