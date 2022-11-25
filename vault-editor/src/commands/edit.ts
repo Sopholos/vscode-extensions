@@ -1,5 +1,5 @@
 import { window, workspace } from "vscode";
-import { configurationName } from "../extension";
+
 import { getVault, isEncryptedDocument, replaceText, showError } from "../util";
 
 export const edit = async () => {
@@ -13,13 +13,10 @@ export const edit = async () => {
     return window.showErrorMessage("Text doesn't seem to be encrypted");
   }
 
-  const conf = workspace.getConfiguration(configurationName);
-  const keysRoot = conf.get<string>("keysRoot") ?? "";
-
-  const editorFileName = activeEditor.document.fileName;
-
   try {
-    const vault = getVault(keysRoot, editorFileName);
+    const editorFileName = activeEditor.document.fileName;
+
+    const vault = getVault(editorFileName);
 
     const decryptedContent = await vault.decrypt(
       activeEditor.document.getText(),
@@ -33,7 +30,6 @@ export const edit = async () => {
     const saveListener = workspace.onDidSaveTextDocument(
       async (savedDocument) => {
         if (savedDocument.fileName === activeEditor.document.fileName) {
-          console.log("HELLO");
           const encryptedContent = await vault.encrypt(
             savedDocument.getText(),
             ""

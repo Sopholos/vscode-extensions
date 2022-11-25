@@ -41,11 +41,9 @@ export const diff = async () => {
     throw new Error(`Couldn't find git repo for file ${editorFilePath}`);
   }
 
-  const conf = workspace.getConfiguration(configurationName);
-  const keysRoot = conf.get<string>("keysRoot") ?? "";
-
   try {
-    const vault = getVault(keysRoot, editorFilePath);
+    const conf = workspace.getConfiguration(configurationName);
+    const vault = getVault(editorFilePath);
 
     let pickedBranch = conf.get<string>("diff.branch");
 

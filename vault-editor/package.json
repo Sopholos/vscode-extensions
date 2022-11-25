@@ -1,7 +1,7 @@
 {
   "name": "vault-editor",
   "displayName": "Vault Editor",
-  "description": "This extension uses Ansible Vault to encrypt and decrypt files.",
+  "description": "Encrypt, decrypt and diff files with Ansible Vault.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.72.0"
@@ -39,22 +39,27 @@
         "vaultEditor.decryptOnOpen": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically decrypts text editors when they are opened and outputs the result to the 'Vault Editor' output channel."
+          "description": "Automatically decrypt text editor when they are opened and output the result to the 'Vault Editor' output channel."
         },
         "vaultEditor.decryptOnStartup": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically decrypts text editors that are open when VsCode is started and outputs the result to the 'Vault Editor' output channel."
+          "description": "Automatically decrypt text editors that are open when VsCode is started and output the result to the 'Vault Editor' output channel."
         },
         "vaultEditor.keysRoot": {
           "type": "string",
-          "default": "",
+          "default": null,
           "description": "The path to the directory that contains your encryption keys."
+        },
+        "vaultEditor.keyExtension": {
+          "type": "string",
+          "default": "key",
+          "description": "The file extension to use when searching for encryption key files."
         },
         "vaultEditor.diff.branch": {
           "type": "string",
-          "default": "",
-          "description": "If set, this branch will automatically be used to compare with."
+          "default": null,
+          "description": "Automatically use this branch to compare with instead of selecting one when running the diff command."
         }
       }
     }

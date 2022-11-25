@@ -6,7 +6,7 @@ import {
   OutputChannel,
   workspace,
 } from "vscode";
-import { readFileSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import { parse, dirname, join } from "path";
 import { glob } from "glob";
 import { Vault } from "ansible-vault";
@@ -40,11 +40,8 @@ export const decryptAndOutput = async (
   output: OutputChannel
 ) => {
   try {
-    const conf = workspace.getConfiguration(configurationName);
-    const keysRoot = conf.get<string>("keysRoot") ?? "";
-
     const editorFileName = document.fileName;
-    const vault = getVault(keysRoot, editorFileName);
+    const vault = getVault(editorFileName);
 
     const encryptedFileContent = readFileSync(editorFileName, "utf-8");
     const decrypted = await vault.decrypt(encryptedFileContent, undefined);
@@ -57,13 +54,17 @@ export const decryptAndOutput = async (
   }
 };
 
-export const getVault = (keysRoot: string, encryptedFilePath: string) => {
+export const getVault = (encryptedFilePath: string) => {
+  const conf = workspace.getConfiguration(configurationName);
+  const keysFileExtension = conf.get<string>("keyExtension");
+  const keysRoot = getKeysRoot();
+
   const encryptedFileName = parse(encryptedFilePath).name;
 
   const encryptedFileDirName = dirname(encryptedFilePath).split("/").pop();
 
   const getVaultKeyInRoot = () => {
-    const vaultKeys = glob.sync("*.key", { cwd: keysRoot });
+    const vaultKeys = glob.sync(`*.${keysFileExtension}`, { cwd: keysRoot });
 
     const pathOfKeyUsedToEncryptFile = vaultKeys.find((vaultKeyFilePath) =>
       encryptedFileName.includes(parse(vaultKeyFilePath).name)
@@ -86,7 +87,7 @@ export const getVault = (keysRoot: string, encryptedFilePath: string) => {
   };
 
   if (encryptedFileDirName) {
-    const vaultKeys = glob.sync("**/*.key", { cwd: keysRoot });
+    const vaultKeys = glob.sync(`**/*.${keysFileExtension}`, { cwd: keysRoot });
 
     const pathOfVaultKeyFilesWithMatchingDir = vaultKeys.filter(
       (vaultKeyPath) =>
@@ -117,4 +118,15 @@ export const getVault = (keysRoot: string, encryptedFilePath: string) => {
   } else {
     return getVaultKeyInRoot();
   }
+};
+
+export const getKeysRoot = () => {
+  const conf = workspace.getConfiguration(configurationName);
+  const keysRoot = conf.get<string>("keysRoot");
+
+  if (!keysRoot) {
+    throw new Error("No root directory set for encryption keys.");
+  }
+
+  return keysRoot;
 };

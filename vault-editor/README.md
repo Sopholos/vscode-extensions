@@ -1,71 +1,61 @@
-# encrypted-file-editor README
+# Vault Editor
 
-This is the README for your extension "encrypted-file-editor". After writing up a brief description, we recommend including the following sections.
+Encrypt, decrypt and diff files with Ansible Vault.
 
-## Features
+## How It Works
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Before using any of the commands, you need to set the root directory of your encryption keys with `vaultEditor.keysRoot`.
 
-For example if there is an image subfolder under your extension project workspace:
+By default, it will look for files that end with `.key`. You can change this with the `vaultEditor.keyExtension` setting.
 
-\!\[feature X\]\(images/feature-x.png\)
+A `.key` file will only be used if its name (excluding the file extension) is included in the name of the file that you're running a command on.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+If you split your encryption key directory into subdirectories, it will try to find a directory name that matches the directory name of the file that you're running the command on. In case of a match, it will only look for `.key` files within that directory.
 
-## Requirements
+### Example
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Let's say you've opened `~/my_project/app1_secrets/development_vault.yml` and run the `Vault: Decrypt File` command while your encryption key directory looks like this:
+
+```
+keys_root
+│   development.key
+│
+└────app1_secrets
+│   │   development.key
+│
+│
+└────app2_secrets
+    │   development.key
+```
+
+In this example, it would look for the encryption key inside `keys_root/app1_secrets` and find `development.key` because "development" is included in the name of the opened file, `development_vault.yml`. If the `app1_secrets` directory didn't exists inside `keys_root`, it would use `keys_root/development.key` instead.
+
+## Commands
+
+- `Vault: Edit File`: Decrypt the file in focus and encrypt it again once you save it.
+
+- `Vault: Encrypt File`: Encrypt the file in focus.
+
+- `Vault: Decrypt File`: Decrypt the file in focus.
+
+- `Vault: Diff File`: View the difference between the encrypted file in focus and the same encrypted file on another branch.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### Required Settings
 
-For example:
+- `vaultEditor.keysRoot`: Set the root directory of your encryption keys.
 
-This extension contributes the following settings:
+### Optional Settings
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `vaultEditor.decryptOnOpen`: Automatically decrypt text editors when they are opened and output the result to the `Vault Editor` output channel. The default is `true`.
 
-## Known Issues
+- `vaultEditor.decryptOnStartup`: Automatically decrypt text editors that are open when VsCode is started and output the result to the `Vault Editor` output channel. The default is `true`.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- `vaultEditor.keyExtension`: The file extension to use when searching for encryption key files. The default is `key`.
 
-## Release Notes
+- `vaultEditor.diff.branch`: Automatically use this branch to compare with instead of selecting one when running the `diff` command. The default is `null`.
 
-Users appreciate release notes as you update your extension.
+## Source Code
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+[You can find the source code here.](https://gitlab.com/bageren/vscode-extensions/-/tree/master/vault-editor)
