@@ -56,68 +56,47 @@ export const decryptAndOutput = async (
 
 export const getVault = (encryptedFilePath: string) => {
   const conf = workspace.getConfiguration(configurationName);
+
   const keysFileExtension = conf.get<string>("keyExtension");
   const keysRoot = getKeysRoot();
 
   const encryptedFileName = parse(encryptedFilePath).name;
-
   const encryptedFileDirName = dirname(encryptedFilePath).split("/").pop();
 
-  const getVaultKeyInRoot = () => {
-    const vaultKeys = glob.sync(`*.${keysFileExtension}`, { cwd: keysRoot });
+  const vaultKeys = glob.sync(`**/*.${keysFileExtension}`, { cwd: keysRoot });
 
-    const pathOfKeyUsedToEncryptFile = vaultKeys.find((vaultKeyFilePath) =>
-      encryptedFileName.includes(parse(vaultKeyFilePath).name)
+  const vaultKeysWithMatchingName = vaultKeys.filter((vaultKeyPath) =>
+    encryptedFileName.includes(parse(vaultKeyPath).name)
+  );
+
+  if (vaultKeysWithMatchingName.length === 0) {
+    throw new Error(
+      `No vault key filename matches ${encryptedFileName} in directory ${keysRoot}`
     );
-
-    if (!pathOfKeyUsedToEncryptFile) {
-      throw new Error(
-        `No vault key file matches ${encryptedFileName}:\n${vaultKeys
-          .map((vaultKey) => parse(vaultKey).name)
-          .join("\n")}`
-      );
-    }
-
-    return new Vault({
-      password: readFileSync(
-        join(keysRoot, pathOfKeyUsedToEncryptFile),
-        "utf-8"
-      ).replace("\n", ""),
-    });
-  };
-
-  if (encryptedFileDirName) {
-    const vaultKeys = glob.sync(`**/*.${keysFileExtension}`, { cwd: keysRoot });
-
-    const pathOfVaultKeyFilesWithMatchingDir = vaultKeys.filter(
-      (vaultKeyPath) =>
-        dirname(vaultKeyPath).split("/").pop() === encryptedFileDirName
-    );
-
-    if (!pathOfVaultKeyFilesWithMatchingDir.length) {
-      return getVaultKeyInRoot();
-    }
-
-    const pathOfKeyUsedToEncryptFile = pathOfVaultKeyFilesWithMatchingDir.find(
-      (vaultKeyFilePath) =>
-        encryptedFileName.includes(parse(vaultKeyFilePath).name)
-    );
-
-    if (!pathOfKeyUsedToEncryptFile) {
-      throw new Error(
-        `No vault key file matches ${encryptedFileName} in directory ${keysRoot}`
-      );
-    }
-
-    return new Vault({
-      password: readFileSync(
-        join(keysRoot, pathOfKeyUsedToEncryptFile),
-        "utf-8"
-      ).replace("\n", ""),
-    });
-  } else {
-    return getVaultKeyInRoot();
   }
+
+  const vaultKeyWithMatchingDir = encryptedFileDirName
+    ? vaultKeysWithMatchingName.find(
+        (vaultKeyPath) =>
+          dirname(vaultKeyPath).split("/").pop() === encryptedFileDirName
+      )
+    : undefined;
+
+  if (vaultKeyWithMatchingDir) {
+    return new Vault({
+      password: readFileSync(
+        join(keysRoot, vaultKeyWithMatchingDir),
+        "utf-8"
+      ).replace("\n", ""),
+    });
+  }
+
+  return new Vault({
+    password: readFileSync(
+      join(keysRoot, vaultKeysWithMatchingName[0]),
+      "utf-8"
+    ).replace("\n", ""),
+  });
 };
 
 export const getKeysRoot = () => {

@@ -4,41 +4,38 @@ Encrypt, decrypt and diff files with Ansible Vault.
 
 ## How It Works
 
-Before using any of the commands, you need to set the root directory of your encryption keys with `vaultEditor.keysRoot`.
+The extension will use the path provided in the `vaultEditor.keysRoot` setting to look for your encryption key files. By default, it will look for files ending with `.key`. You can change this with the `vaultEditor.keyExtension` setting.
 
-By default, it will look for files that end with `.key`. You can change this with the `vaultEditor.keyExtension` setting.
+A `.key` file will only be used if its name (excluding the file extension) is included in the name of the file that you're editing.
 
-A `.key` file will only be used if its name (excluding the file extension) is included in the name of the file that you're running a command on.
-
-If you split your encryption key directory into subdirectories, it will try to find a directory name that matches the directory name of the file that you're running the command on. In case of a match, it will only look for `.key` files within that directory.
+If your `vaultEditor.keysRoot` contains subdirectories, you may have multiple `.key` files with a matching name. In this case, it will try to find one whose directory name matches the directory name of the file you're editing. If that fails, it will use the first one it found.
 
 ### Example
 
-Let's say you've opened `~/my_project/app1_secrets/development_vault.yml` and run the `Vault: Decrypt File` command while your encryption key directory looks like this:
+Let's say you've opened `~/myProject/app1Secrets/developmentVault.yml` and run the `Vault: Decrypt File` command while your `vaultEditor.keysRoot` looks like this:
 
 ```
-keys_root
+keysRoot
 │   development.key
 │
-└────app1_secrets
+└────app1Secrets
 │   │   development.key
 │
-│
-└────app2_secrets
-    │   development.key
+└────app2Secrets
+    │   qa.key
 ```
 
-In this example, it would look for the encryption key inside `keys_root/app1_secrets` and find `development.key` because "development" is included in the name of the opened file, `development_vault.yml`. If the `app1_secrets` directory didn't exists inside `keys_root`, it would use `keys_root/development.key` instead.
+In this example, it would find both `keysRoot/development.key` and `keysRoot/app1Secrets/development.key` because "development" is included in the name of the opened file, `developmentVault.yml`. But it would use `keysRoot/app1Secrets/development.key` because the opened file also lives within a directory called `app1Secrets`.
 
 ## Commands
 
-- `Vault: Edit File`: Decrypt the file in focus and encrypt it again once you save it.
+- `Vault: Edit File`: Decrypt a file and encrypt it again once you save it.
 
-- `Vault: Encrypt File`: Encrypt the file in focus.
+- `Vault: Encrypt File`: Encrypt a file.
 
-- `Vault: Decrypt File`: Decrypt the file in focus.
+- `Vault: Decrypt File`: Decrypt a file.
 
-- `Vault: Diff File`: View the difference between the encrypted file in focus and the same encrypted file on another branch.
+- `Vault: Diff File`: View the difference between an encrypted file and the corresponding encrypted file on another branch.
 
 ## Extension Settings
 
