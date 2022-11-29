@@ -33,24 +33,18 @@ export function activate(context: ExtensionContext) {
   }
 
   const encryptCommand = commands.registerCommand(
-    "encrypted-file-editor.encrypt_file",
+    "vault-editor.encrypt_file",
     encrypt
   );
 
   const decryptCommand = commands.registerCommand(
-    "encrypted-file-editor.decrypt_file",
+    "vault-editor.decrypt_file",
     decrypt
   );
 
-  const editCommand = commands.registerCommand(
-    "encrypted-file-editor.edit_file",
-    edit
-  );
+  const editCommand = commands.registerCommand("vault-editor.edit_file", edit);
 
-  const diffCommand = commands.registerCommand(
-    "encrypted-file-editor.diff_file",
-    diff
-  );
+  const diffCommand = commands.registerCommand("vault-editor.diff_file", diff);
 
   context.subscriptions.push(
     encryptCommand,
