@@ -1,5 +1,5 @@
 import { window, commands, Uri, ViewColumn } from "vscode";
-import { getVault, isEncryptedDocument, showError } from "../util";
+import { getTmpPath, getVault, isEncryptedDocument, showError } from "../util";
 import { mkdirSync, writeFileSync, existsSync } from "fs";
 import { rm } from "fs/promises";
 import { basename } from "path";
@@ -22,7 +22,7 @@ export const view = async () => {
 
     const vaultFileBaseName = basename(editorFilePath);
 
-    const tmpDir = "./tmp";
+    const tmpDir = getTmpPath();
 
     if (!existsSync(tmpDir)) {
       mkdirSync(tmpDir);

@@ -6,7 +6,7 @@ import {
   OutputChannel,
   workspace,
 } from "vscode";
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, PathLike } from "fs";
 import { parse, dirname, join } from "path";
 import { glob } from "glob";
 import { Vault } from "ansible-vault";
@@ -104,8 +104,20 @@ export const getKeysRoot = () => {
   const keysRoot = conf.get<string>("keysRoot");
 
   if (!keysRoot) {
-    throw new Error("No root directory set for encryption keys.");
+    throw new Error("No root directory set for encryption keys. Setting: \"keysRoot\"");
   }
 
   return keysRoot;
+};
+
+export const getTmpPath = () => {
+  const conf = workspace.getConfiguration(configurationName);
+
+  const tmpPath = conf.get<PathLike>("tmpPath");
+
+  if(!tmpPath) {
+    throw new Error("No directory set for temporary files. Setting: \"tmpPath\"");
+  }
+
+  return tmpPath;
 };

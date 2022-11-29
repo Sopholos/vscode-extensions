@@ -1,6 +1,7 @@
 import { extensions, workspace, window, commands, Uri } from "vscode";
 import { GitExtension } from "../git";
 import {
+  getTmpPath,
   getVault,
   isEncryptedDocument,
   isEncryptedText,
@@ -69,7 +70,7 @@ export const diff = async () => {
       );
     }
 
-    const tmpDir = "./tmp";
+    const tmpDir = getTmpPath();
 
     if (!existsSync(tmpDir)) {
       mkdirSync(tmpDir);

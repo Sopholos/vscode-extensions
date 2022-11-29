@@ -55,6 +55,8 @@ In this example, it would find both `keysRoot/development.key` and `keysRoot/app
 
 - `vaultEditor.diff.branch`: Automatically use this branch to compare with instead of selecting one when running the `diff` command. The default is `null`.
 
+- `vaultEditor.tmpPath`: Location of where to put the temporary (decrypted) files. The default is `./tmp`.
+
 ## Source Code
 
 [You can find the source code here.](https://gitlab.com/bageren/vscode-extensions/-/tree/master/vault-editor)
