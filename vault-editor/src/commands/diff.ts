@@ -95,8 +95,8 @@ export const diff = async () => {
 
     // Clean up after creating temporary files that are needed vscode.diff
     await Promise.all([
-      rm(tmpOriginalPath, { recursive: true }),
-      rm(tmpModifiedPath, { recursive: true }),
+      rm(tmpOriginalPath),
+      rm(tmpModifiedPath),
     ]);
   } catch (err) {
     return showError(err);
