@@ -37,6 +37,8 @@ In this example, it would find both `keysRoot/development.key` and `keysRoot/app
 
 - `Vault: Diff File`: View the difference between an encrypted file and the corresponding encrypted file on another branch.
 
+- `Vault: View File`: View the decrypted version of the encrypted file.
+
 ## Extension Settings
 
 ### Required Settings

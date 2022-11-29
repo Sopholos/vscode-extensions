@@ -36,6 +36,10 @@
       {
         "command": "vault-editor.diff_file",
         "title": "Vault: Diff File"
+      },
+      {
+        "command": "vault-editor.view_file",
+        "title": "Vault: View File"
       }
     ],
     "configuration": {
