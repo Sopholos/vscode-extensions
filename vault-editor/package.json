@@ -15,6 +15,12 @@
   "categories": [
     "Other"
   ],
+  "keywords": [
+    "ansible",
+    "ansible-vault",
+    "encrypt",
+    "decrypt"
+  ],
   "activationEvents": [
     "onStartupFinished"
   ],
