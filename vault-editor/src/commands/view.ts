@@ -8,7 +8,7 @@ export const view = async () => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
-    return window.showInformationMessage("No active text editor to diff");
+    return window.showInformationMessage("No active text editor to view");
   }
 
   if (!isEncryptedDocument(activeEditor.document)) {
