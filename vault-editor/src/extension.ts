@@ -2,7 +2,7 @@ import { ExtensionContext, window, workspace, commands } from "vscode";
 import { decrypt } from "./commands/decrypt";
 import { diff } from "./commands/diff";
 import { edit } from "./commands/edit";
-import {view } from "./commands/view";
+import { view } from "./commands/view";
 import { encrypt } from "./commands/encrypt";
 import { decryptAndOutput, isEncryptedDocument } from "./util";
 import { existsSync } from "fs";
@@ -17,7 +17,7 @@ export function activate(context: ExtensionContext) {
 
   if (decryptOnStartup) {
     workspace.textDocuments.forEach(async (doc) => {
-      if (isEncryptedDocument(doc)) {
+      if (isEncryptedDocument(doc) && existsSync(doc.fileName)) {
         await decryptAndOutput(doc, output);
       }
     });

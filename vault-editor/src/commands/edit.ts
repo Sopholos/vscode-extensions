@@ -29,13 +29,14 @@ export const edit = async () => {
 
     const saveListener = workspace.onDidSaveTextDocument(
       async (savedDocument) => {
-        if (savedDocument.fileName === activeEditor.document.fileName) {
+        const currentEditor = window.activeTextEditor;
+
+        if (savedDocument.fileName === currentEditor?.document.fileName) {
           const encryptedContent = await vault.encrypt(
             savedDocument.getText(),
             ""
           );
-
-          await replaceText(activeEditor, encryptedContent);
+          await replaceText(currentEditor, encryptedContent);
           saveListener.dispose();
           await activeEditor.document.save();
         }

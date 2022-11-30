@@ -6,7 +6,7 @@ import {
   OutputChannel,
   workspace,
 } from "vscode";
-import { readFileSync, readdirSync, PathLike } from "fs";
+import { readFileSync, PathLike } from "fs";
 import { parse, dirname, join } from "path";
 import { glob } from "glob";
 import { Vault } from "ansible-vault";
@@ -18,7 +18,11 @@ export const isEncryptedText = (text: string) =>
 export const isEncryptedDocument = (doc: TextDocument) =>
   isEncryptedText(doc.lineAt(0).text);
 
-export const replaceText = async (editor: TextEditor, content: string) =>
+export const replaceText = async (editor: TextEditor, content: string) => {
+  if (editor.document.isClosed) {
+    throw new Error("Can't edit closed document");
+  }
+
   editor.edit((builder) => {
     builder.replace(
       new Range(
@@ -28,6 +32,7 @@ export const replaceText = async (editor: TextEditor, content: string) =>
       content
     );
   });
+};
 
 export const showError = (err: any) => {
   window.showErrorMessage(
@@ -104,7 +109,9 @@ export const getKeysRoot = () => {
   const keysRoot = conf.get<string>("keysRoot");
 
   if (!keysRoot) {
-    throw new Error("No root directory set for encryption keys. Setting: \"keysRoot\"");
+    throw new Error(
+      'No root directory set for encryption keys. Setting: "keysRoot"'
+    );
   }
 
   return keysRoot;
@@ -115,8 +122,8 @@ export const getTmpPath = () => {
 
   const tmpPath = conf.get<PathLike>("tmpPath");
 
-  if(!tmpPath) {
-    throw new Error("No directory set for temporary files. Setting: \"tmpPath\"");
+  if (!tmpPath) {
+    throw new Error('No directory set for temporary files. Setting: "tmpPath"');
   }
 
   return tmpPath;
