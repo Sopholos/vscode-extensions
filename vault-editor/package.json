@@ -36,6 +36,10 @@
       {
         "command": "vault-editor.diff_file",
         "title": "Vault: Diff File"
+      },
+      {
+        "command": "vault-editor.view_file",
+        "title": "Vault: View File"
       }
     ],
     "configuration": {
@@ -66,6 +70,11 @@
           "type": "string",
           "default": null,
           "description": "Automatically use this branch to compare with instead of selecting one when running the diff command."
+        },
+        "vaultEditor.tmpPath": {
+          "type": "string",
+          "default": "./tmp",
+          "description": "Location of where to put the temporary (decrypted) files."
         }
       }
     }

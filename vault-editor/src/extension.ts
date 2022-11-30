@@ -2,6 +2,7 @@ import { ExtensionContext, window, workspace, commands } from "vscode";
 import { decrypt } from "./commands/decrypt";
 import { diff } from "./commands/diff";
 import { edit } from "./commands/edit";
+import {view } from "./commands/view";
 import { encrypt } from "./commands/encrypt";
 import { decryptAndOutput, isEncryptedDocument } from "./util";
 import { existsSync } from "fs";
@@ -46,11 +47,14 @@ export function activate(context: ExtensionContext) {
 
   const diffCommand = commands.registerCommand("vault-editor.diff_file", diff);
 
+  const viewCommand = commands.registerCommand("vault-editor.view_file", view);
+
   context.subscriptions.push(
     encryptCommand,
     decryptCommand,
     editCommand,
-    diffCommand
+    diffCommand,
+    viewCommand
   );
 }
 

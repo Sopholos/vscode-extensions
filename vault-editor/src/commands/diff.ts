@@ -1,6 +1,7 @@
 import { extensions, workspace, window, commands, Uri } from "vscode";
 import { GitExtension } from "../git";
 import {
+  getTmpPath,
   getVault,
   isEncryptedDocument,
   isEncryptedText,
@@ -69,7 +70,7 @@ export const diff = async () => {
       );
     }
 
-    const tmpDir = "./tmp";
+    const tmpDir = getTmpPath();
 
     if (!existsSync(tmpDir)) {
       mkdirSync(tmpDir);
@@ -95,8 +96,8 @@ export const diff = async () => {
 
     // Clean up after creating temporary files that are needed vscode.diff
     await Promise.all([
-      rm(tmpOriginalPath, { recursive: true }),
-      rm(tmpModifiedPath, { recursive: true }),
+      rm(tmpOriginalPath),
+      rm(tmpModifiedPath),
     ]);
   } catch (err) {
     return showError(err);

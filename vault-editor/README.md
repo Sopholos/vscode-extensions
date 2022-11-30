@@ -37,6 +37,8 @@ In this example, it would find both `keysRoot/development.key` and `keysRoot/app
 
 - `Vault: Diff File`: View the difference between an encrypted file and the corresponding encrypted file on another branch.
 
+- `Vault: View File`: View the decrypted version of the encrypted file.
+
 ## Extension Settings
 
 ### Required Settings
@@ -52,6 +54,8 @@ In this example, it would find both `keysRoot/development.key` and `keysRoot/app
 - `vaultEditor.keyExtension`: The file extension to use when searching for encryption key files. The default is `key`.
 
 - `vaultEditor.diff.branch`: Automatically use this branch to compare with instead of selecting one when running the `diff` command. The default is `null`.
+
+- `vaultEditor.tmpPath`: Location of where to put the temporary (decrypted) files. The default is `./tmp`.
 
 ## Source Code
 
