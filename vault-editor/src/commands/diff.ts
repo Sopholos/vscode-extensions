@@ -1,18 +1,26 @@
-import { extensions, workspace, window, commands, Uri } from "vscode";
+import {
+  extensions,
+  window,
+  commands,
+  Uri,
+  OutputChannel,
+  workspace,
+} from "vscode";
 import { GitExtension } from "../git";
 import {
   getTmpPath,
-  getVault,
   isEncryptedDocument,
   isEncryptedText,
   showError,
+  getPasswordPaths,
+  tryDecrypt,
 } from "../util";
 import { mkdirSync, writeFileSync, existsSync } from "fs";
 import { rm } from "fs/promises";
 import { basename } from "path";
 import { configurationName } from "../extension";
 
-export const diff = async () => {
+export const diff = async (output: OutputChannel) => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
@@ -44,7 +52,7 @@ export const diff = async () => {
 
   try {
     const conf = workspace.getConfiguration(configurationName);
-    const vault = getVault(editorFilePath);
+    const passwordPaths = await getPasswordPaths(activeEditor.document, output);
 
     let pickedBranch = conf.get<string>("diff.branch");
 
@@ -76,16 +84,17 @@ export const diff = async () => {
       mkdirSync(tmpDir);
     }
 
-    const decryptedOriginal = await vault.decrypt(originalVault, "");
-    const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_${pickedBranch}`;
-    writeFileSync(tmpOriginalPath, decryptedOriginal ?? "");
-
-    const decryptedModified = await vault.decrypt(
-      activeEditor.document.getText(),
-      ""
+    const { decryptedContent: decryptedModified, vault } = await tryDecrypt(
+      passwordPaths,
+      activeEditor.document,
+      output
     );
     const tmpModifiedPath = `${tmpDir}/${vaultFileBaseName}_${repo.state.HEAD?.name}`;
     writeFileSync(tmpModifiedPath, decryptedModified ?? "");
+
+    const decryptedOriginal = await vault.decrypt(originalVault, "");
+    const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_${pickedBranch}`;
+    writeFileSync(tmpOriginalPath, decryptedOriginal ?? "");
 
     await commands.executeCommand(
       "vscode.diff",
@@ -95,10 +104,7 @@ export const diff = async () => {
     );
 
     // Clean up after creating temporary files that are needed vscode.diff
-    await Promise.all([
-      rm(tmpOriginalPath),
-      rm(tmpModifiedPath),
-    ]);
+    await Promise.all([rm(tmpOriginalPath), rm(tmpModifiedPath)]);
   } catch (err) {
     return showError(err);
   }

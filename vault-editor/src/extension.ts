@@ -16,6 +16,7 @@ export function activate(context: ExtensionContext) {
   const decryptOnStartup = conf.get<boolean>("decryptOnStartup");
 
   if (decryptOnStartup) {
+    output.appendLine("decryptOnStartup enabled, will decrypt open files");
     workspace.textDocuments.forEach(async (doc) => {
       if (isEncryptedDocument(doc) && existsSync(doc.fileName)) {
         await decryptAndOutput(doc, output);
@@ -24,6 +25,9 @@ export function activate(context: ExtensionContext) {
   }
 
   if (decryptOnOpen) {
+    output.appendLine(
+      "decryptOnOpen enabled, will decrypt files when they are opened"
+    );
     context.subscriptions.push(
       workspace.onDidOpenTextDocument(async (doc) => {
         if (isEncryptedDocument(doc) && existsSync(doc.fileName)) {
@@ -35,19 +39,25 @@ export function activate(context: ExtensionContext) {
 
   const encryptCommand = commands.registerCommand(
     "vault-editor.encrypt_file",
-    encrypt
+    () => encrypt(output)
   );
 
   const decryptCommand = commands.registerCommand(
     "vault-editor.decrypt_file",
-    decrypt
+    () => decrypt(output)
   );
 
-  const editCommand = commands.registerCommand("vault-editor.edit_file", edit);
+  const editCommand = commands.registerCommand("vault-editor.edit_file", () =>
+    edit(output)
+  );
 
-  const diffCommand = commands.registerCommand("vault-editor.diff_file", diff);
+  const diffCommand = commands.registerCommand("vault-editor.diff_file", () =>
+    diff(output)
+  );
 
-  const viewCommand = commands.registerCommand("vault-editor.view_file", view);
+  const viewCommand = commands.registerCommand("vault-editor.view_file", () =>
+    view(output)
+  );
 
   context.subscriptions.push(
     encryptCommand,

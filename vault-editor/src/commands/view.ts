@@ -1,10 +1,16 @@
-import { window, commands, Uri, ViewColumn } from "vscode";
-import { getTmpPath, getVault, isEncryptedDocument, showError } from "../util";
+import { window, commands, Uri, ViewColumn, OutputChannel } from "vscode";
+import {
+  getTmpPath,
+  isEncryptedDocument,
+  showError,
+  getPasswordPaths,
+  tryDecrypt,
+} from "../util";
 import { mkdirSync, writeFileSync, existsSync } from "fs";
 import { rm } from "fs/promises";
 import { basename } from "path";
 
-export const view = async () => {
+export const view = async (output: OutputChannel) => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
@@ -18,7 +24,7 @@ export const view = async () => {
   const editorFilePath = activeEditor.document.fileName;
 
   try {
-    const vault = getVault(editorFilePath);
+    const passwordPaths = await getPasswordPaths(activeEditor.document, output);
 
     const vaultFileBaseName = basename(editorFilePath);
 
@@ -28,17 +34,18 @@ export const view = async () => {
       mkdirSync(tmpDir);
     }
 
-    const decryptedViewFile = await vault.decrypt(
-      activeEditor.document.getText(),
-      ""
+    const { decryptedContent } = await tryDecrypt(
+      passwordPaths,
+      activeEditor.document,
+      output
     );
     const tmpViewFilePath = `${tmpDir}/${vaultFileBaseName}`;
-    writeFileSync(tmpViewFilePath, decryptedViewFile ?? "");
+    writeFileSync(tmpViewFilePath, decryptedContent ?? "");
 
     await commands.executeCommand(
       "vscode.open",
       Uri.file(tmpViewFilePath),
-      {viewColumn: ViewColumn.Beside, preview: true},
+      { viewColumn: ViewColumn.Beside, preview: true },
       `Vault View: ${vaultFileBaseName}`
     );
 

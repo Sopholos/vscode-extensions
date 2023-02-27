@@ -1,7 +1,14 @@
-import { window } from "vscode";
-import { getVault, isEncryptedDocument, replaceText, showError } from "../util";
+import { OutputChannel, window } from "vscode";
+import {
+  isEncryptedDocument,
+  replaceText,
+  showError,
+  getPasswordPaths,
+} from "../util";
+import { Vault } from "ansible-vault";
+import { readFileSync } from "fs";
 
-export const encrypt = async () => {
+export const encrypt = async (output: OutputChannel) => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
@@ -13,8 +20,22 @@ export const encrypt = async () => {
   }
 
   try {
-    const editorFileName = activeEditor.document.fileName;
-    const vault = getVault(editorFileName);
+    const passwordPaths = await getPasswordPaths(activeEditor.document, output);
+
+    const passwordPathToUse = await getPasswordPathToUse(passwordPaths);
+
+    if (!passwordPathToUse) {
+      return window.showInformationMessage(
+        "Cannot encrypt without a password file"
+      );
+    }
+
+    output.appendLine(
+      `Encrypting ${activeEditor.document.fileName} using ${passwordPathToUse}`
+    );
+
+    const password = readFileSync(passwordPathToUse, "utf-8").replace("\n", "");
+    const vault = new Vault({ password });
 
     const encryptedContent = await vault.encrypt(
       activeEditor.document.getText(),
@@ -27,4 +48,18 @@ export const encrypt = async () => {
   } catch (err) {
     return showError(err);
   }
+};
+
+const getPasswordPathToUse = async (passwordPaths: string[]) => {
+  let passwordToUse: string | undefined;
+
+  if (passwordPaths.length > 1) {
+    passwordToUse = await window.showQuickPick(passwordPaths, {
+      title: "Select password file to use",
+    });
+
+    return passwordToUse;
+  }
+
+  return passwordPaths[0];
 };

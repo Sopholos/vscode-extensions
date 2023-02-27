@@ -65,7 +65,12 @@
         "vaultEditor.keysRoot": {
           "type": "string",
           "default": null,
-          "description": "The path to the directory that contains your encryption keys."
+          "description": "The path to the directory that contains your encryption keys. If not set, it will look for an ansible.cfg file instead."
+        },
+        "vaultEditor.ansibleCfgPath": {
+          "type": "string",
+          "default": null,
+          "description": "Provide the path to your Ansible config file if it isn't at one of the default locations and you're not using the 'keysRoot' setting."
         },
         "vaultEditor.keyExtension": {
           "type": "string",

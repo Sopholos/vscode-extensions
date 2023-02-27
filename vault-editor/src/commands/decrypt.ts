@@ -1,7 +1,13 @@
-import { window } from "vscode";
-import { getVault, isEncryptedDocument, replaceText, showError } from "../util";
+import { OutputChannel, window } from "vscode";
+import {
+  getPasswordPaths,
+  isEncryptedDocument,
+  replaceText,
+  showError,
+  tryDecrypt,
+} from "../util";
 
-export const decrypt = async () => {
+export const decrypt = async (output: OutputChannel) => {
   const activeEditor = window.activeTextEditor;
 
   if (!activeEditor) {
@@ -13,12 +19,12 @@ export const decrypt = async () => {
   }
 
   try {
-    const editorFileName = activeEditor.document.fileName;
-    const vault = getVault(editorFileName);
+    const passwordPaths = await getPasswordPaths(activeEditor.document, output);
 
-    const decryptedContent = await vault.decrypt(
-      activeEditor.document.getText(),
-      ""
+    const { decryptedContent } = await tryDecrypt(
+      passwordPaths,
+      activeEditor.document,
+      output
     );
 
     await replaceText(activeEditor, decryptedContent ?? "");
