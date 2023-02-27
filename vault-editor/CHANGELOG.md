@@ -1,9 +1,4 @@
-# Change Log
+# 0.0.11
 
-All notable changes to the "vault-editor" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+- Change default `tmpPath` to `/tmp/vault_editor/` (was previously `./tmp`)
+- Support Ansible config files and make them the default way of finding password files
