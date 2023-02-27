@@ -79,7 +79,7 @@
         },
         "vaultEditor.tmpPath": {
           "type": "string",
-          "default": "./tmp",
+          "default": "/tmp/vault_editor/",
           "description": "Location of where to put the temporary (decrypted) files."
         }
       }
