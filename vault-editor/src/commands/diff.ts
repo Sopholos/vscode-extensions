@@ -50,6 +50,8 @@ export const diff = async (output: OutputChannel) => {
     throw new Error(`Couldn't find git repo for file ${editorFilePath}`);
   }
 
+  const allBranches = await repo.getBranches({ remote: true });
+
   try {
     const conf = workspace.getConfiguration(configurationName);
     const passwordPaths = await getPasswordPaths(activeEditor.document, output);
@@ -58,7 +60,7 @@ export const diff = async (output: OutputChannel) => {
 
     if (!pickedBranch) {
       pickedBranch = await window.showQuickPick(
-        repo.state.refs.map((ref) => ref.name ?? ""),
+        allBranches.map((ref) => ref.name ?? ""),
         { title: "Select branch to compare with" }
       );
 
@@ -93,7 +95,10 @@ export const diff = async (output: OutputChannel) => {
     writeFileSync(tmpModifiedPath, decryptedModified ?? "");
 
     const decryptedOriginal = await vault.decrypt(originalVault, "");
-    const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_${pickedBranch}`;
+    const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_${pickedBranch.replace(
+      "/",
+      "_"
+    )}`;
     writeFileSync(tmpOriginalPath, decryptedOriginal ?? "");
 
     await commands.executeCommand(
