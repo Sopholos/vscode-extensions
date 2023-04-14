@@ -9,26 +9,26 @@ import {
 } from "../util";
 
 export const edit = async (output: OutputChannel) => {
-  const activeEditor = window.activeTextEditor;
+  const vaultTextEditor = window.activeTextEditor;
 
-  if (!activeEditor) {
+  if (!vaultTextEditor) {
     return window.showErrorMessage("No active text editor to edit");
   }
 
-  if (!isEncryptedDocument(activeEditor.document)) {
+  if (!isEncryptedDocument(vaultTextEditor.document)) {
     return window.showErrorMessage("Text doesn't seem to be encrypted");
   }
 
   try {
-    const passwordPaths = await getPasswordPaths(activeEditor.document, output);
-
+    const vaultDocument = vaultTextEditor.document;
+    const passwordPaths = await getPasswordPaths(vaultDocument, output);
     const { decryptedContent, vault } = await tryDecrypt(
       passwordPaths,
-      activeEditor.document,
+      vaultDocument,
       output
     );
 
-    await replaceText(activeEditor, decryptedContent ?? "");
+    await replaceText(vaultTextEditor, decryptedContent ?? "");
 
     window.showInformationMessage("Save to encrypt file again");
 
@@ -43,7 +43,7 @@ export const edit = async (output: OutputChannel) => {
           );
           await replaceText(currentEditor, encryptedContent);
           saveListener.dispose();
-          await activeEditor.document.save();
+          await vaultTextEditor.document.save();
         }
       }
     );
