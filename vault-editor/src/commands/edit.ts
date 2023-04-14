@@ -1,4 +1,12 @@
-import { OutputChannel, window, workspace } from "vscode";
+import {
+  Location,
+  OutputChannel,
+  Position,
+  Range,
+  WorkspaceEdit,
+  window,
+  workspace,
+} from "vscode";
 
 import {
   getPasswordPaths,
@@ -34,14 +42,27 @@ export const edit = async (output: OutputChannel) => {
 
     const saveListener = workspace.onDidSaveTextDocument(
       async (savedDocument) => {
-        const currentEditor = window.activeTextEditor;
-
-        if (savedDocument.fileName === currentEditor?.document.fileName) {
+        if (savedDocument === vaultDocument) {
           const encryptedContent = await vault.encrypt(
             savedDocument.getText(),
             ""
           );
-          await replaceText(currentEditor, encryptedContent);
+
+          // Intentionally missing the '-1' to create a range larger than the file
+          // which gets fixed by the validate range method call.
+          let invalidRange = new Range(0, 0, vaultDocument.lineCount, 0);
+          let fullRange = vaultDocument.validateRange(invalidRange);
+
+          // Use a workspace edit instead of text editor of the vault file,
+          // since the save can be initiated from another editor or tab (e.g. Save All)
+          const encryptVaultEdit = new WorkspaceEdit();
+          encryptVaultEdit.replace(
+            vaultDocument.uri,
+            fullRange,
+            encryptedContent
+          );
+          await workspace.applyEdit(encryptVaultEdit);
+
           saveListener.dispose();
           await vaultTextEditor.document.save();
         }
