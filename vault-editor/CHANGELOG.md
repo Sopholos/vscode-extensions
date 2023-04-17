@@ -7,3 +7,7 @@
 
 - Fix broken diff command
 - Also list remote branches when using diff command
+
+# 0.0.15
+
+- Fixed issue regarding the Edit command sometimes encrypting the wrong file on save
