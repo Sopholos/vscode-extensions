@@ -96,7 +96,7 @@ export const diff = async (output: OutputChannel) => {
 
     const decryptedOriginal = await vault.decrypt(originalVault, "");
     const tmpOriginalPath = `${tmpDir}/${vaultFileBaseName}_${pickedBranch.replace(
-      "/",
+      /\//g,
       "_"
     )}`;
     writeFileSync(tmpOriginalPath, decryptedOriginal ?? "");
