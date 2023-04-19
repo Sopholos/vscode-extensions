@@ -11,3 +11,7 @@
 # 0.0.15
 
 - Fixed issue regarding the Edit command sometimes encrypting the wrong file on save
+
+# 0.0.16
+
+- Bug fix: Diff command didn't work if selected branch contained multiple slashes
