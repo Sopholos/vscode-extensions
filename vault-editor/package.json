@@ -2,7 +2,7 @@
   "name": "vault-editor",
   "displayName": "Vault Editor",
   "description": "Encrypt, decrypt and diff files with Ansible Vault.",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "engines": {
     "vscode": "^1.72.0"
   },
