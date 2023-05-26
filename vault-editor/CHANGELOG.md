@@ -15,3 +15,8 @@
 # 0.0.16
 
 - Bug fix: Diff command didn't work if selected branch contained multiple slashes
+
+# 0.0.17
+
+- Strip vault ID's from ansible.cfg paths
+- Allow bash script as password file
