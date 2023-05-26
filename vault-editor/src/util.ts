@@ -13,6 +13,7 @@ import { Vault } from "ansible-vault";
 import { configurationName } from "./extension";
 import { homedir } from "os";
 import { createInterface } from "readline";
+import { exec } from "child_process";
 
 export const isEncryptedText = (text: string) =>
   text.startsWith("$ANSIBLE_VAULT;");
@@ -192,11 +193,13 @@ const getPasswordPathsFromAnsibleCfg = (cfgPath: string) => {
       if (passwordFilePaths?.length) {
         return resolve(
           passwordFilePaths.map((path) => {
-            if (path.startsWith("~")) {
-              return path.replace("~", homedir());
+            let fixedPath = path.substring(path.indexOf("@") + 1);
+
+            if (fixedPath.startsWith("~")) {
+              return fixedPath.replace("~", homedir());
             }
 
-            return path;
+            return fixedPath;
           })
         );
       }
@@ -245,8 +248,21 @@ export const tryDecrypt = async (
       `Attempting to decrypt ${document.fileName} using ${path}`
     );
 
-    const password = readFileSync(path, "utf-8").replace("\n", "");
-    const vault = new Vault({ password });
+    let password = readFileSync(path, "utf-8");
+
+    if (password.startsWith("#!/bin/bash")) {
+      password = await new Promise((resolve, reject) =>
+        exec(path, (err, res) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        })
+      );
+    }
+
+    const vault = new Vault({ password: password.replace("\n", "") });
 
     try {
       const decryptedContent = await vault.decrypt(document.getText(), "");
