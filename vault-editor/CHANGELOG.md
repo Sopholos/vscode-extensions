@@ -20,3 +20,7 @@
 
 - Strip vault ID's from ansible.cfg paths
 - Allow bash script as password file
+
+# 0.0.18
+
+- Bug fix: If a password pointed to a bash script, it would only be executed to get the password when decrypting. Now it also works for encryption.
