@@ -7,6 +7,7 @@ import {
 } from "../util";
 import { Vault } from "ansible-vault";
 import { readFileSync } from "fs";
+import { exec } from "child_process";
 
 export const encrypt = async (output: OutputChannel) => {
   const activeEditor = window.activeTextEditor;
@@ -34,8 +35,21 @@ export const encrypt = async (output: OutputChannel) => {
       `Encrypting ${activeEditor.document.fileName} using ${passwordPathToUse}`
     );
 
-    const password = readFileSync(passwordPathToUse, "utf-8").replace("\n", "");
-    const vault = new Vault({ password });
+    let password = readFileSync(passwordPathToUse, "utf-8");
+
+    if (password.startsWith("#!/bin/bash")) {
+      password = await new Promise((resolve, reject) =>
+        exec(passwordPathToUse, (err, res) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(res);
+          }
+        })
+      );
+    }
+
+    const vault = new Vault({ password: password.replace("\n", "") });
 
     const encryptedContent = await vault.encrypt(
       activeEditor.document.getText(),
